@@ -198,7 +198,7 @@ secure_server_external <- function(check_credentials = check_credentials_externa
     if (is.null(token)) {
       token <- token_start
     }
-    if (!is.null(token) && .tok$is_valid(token)) {
+    if (!is.null(token) && .tok$is_valid_server(token)) {
       user_info <- .tok$get(token)
       set_external_user_info(user_info_rv, user_info)
     }
