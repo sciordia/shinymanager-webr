@@ -1,6 +1,6 @@
 Package: shinymanager.webr
 Title: Lightweight Auth0 Access Container for 'Shiny' and 'webR'
-Version: 0.1.0
+Version: 0.1.1
 Authors@R: c(
     person("Benoit", "Thieurmel", email = "bthieurmel@gmail.com", role = c("aut", "cre")),
     person("Victor", "Perrier", email = "victor.perrier@dreamRs.fr", role = c("aut"))

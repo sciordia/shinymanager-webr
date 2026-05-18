@@ -1,3 +1,8 @@
+# shinymanager.webr 0.1.1
+
+* Fixed external domain authorization when only `allowed_domains` is supplied.
+* Fixed server-side auth state restoration after the UI token gate accepts a session token.
+
 # shinymanager.webr 0.1.0
 
 * Initial lightweight fork for Shiny apps running with webR/WebAssembly.
