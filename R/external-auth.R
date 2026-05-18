@@ -135,7 +135,7 @@ check_credentials_external <- function(allowed_users = NULL,
     email <- identity$email
     domain <- sub("^.*@", "", email)
 
-    allowed <- TRUE
+    allowed <- is.null(allowed_users) && is.null(allowed_domains)
     if (!is.null(allowed_users)) {
       allowed <- tolower(external_user) %in% allowed_users || tolower(email) %in% allowed_users
     }

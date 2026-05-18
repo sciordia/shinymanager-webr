@@ -21,6 +21,7 @@ test_that("check_credentials_external can require verified email", {
 
   expect_true(check_user(list(email = "fanny@example.org", email_verified = TRUE))$result)
   expect_false(check_user(list(email = "fanny@example.org", email_verified = FALSE))$result)
+  expect_false(check_user(list(email = "fanny@example.net", email_verified = TRUE))$result)
 })
 
 test_that("secure_app_external works", {
