@@ -22,7 +22,7 @@ secure_server_local(
   check_credentials,
   db,
   pushover_app_token = Sys.getenv("PUSHOVER_APP"),
-  pushover_title = "C<U+00F3>digo de acceso",
+  pushover_title = NULL,
   twofa_window = 30,
   max_attempts = 5,
   remember_device = TRUE,
@@ -51,16 +51,21 @@ minutes (0 disables).}
 
 \item{head_auth}{Tags to add to the authentication page head.}
 
+\item{check_credentials}{Function returned by \code{check_credentials_local}.}
+
 \item{pushover_app_token}{Pushover application (API) token used to deliver
 the 2FA code. Per-user keys are stored encrypted in the database.}
 
-\item{pushover_title}{Title of the Pushover notification.}
+\item{pushover_title}{Title of the Pushover notification. If \code{NULL}, a
+default title is used.}
 
 \item{max_attempts}{Maximum wrong 2FA attempts before returning to login.}
 
 \item{remember_device}{If \code{TRUE}, a valid device cookie skips 2FA.}
 
 \item{device_ttl_hours}{Lifetime of the device cookie/token, in hours.}
+
+\item{session}{Shiny session.}
 }
 \value{
 \code{check_credentials_local()} returns a validation function that

@@ -217,11 +217,14 @@ secure_app_local <- function(ui,
 #'
 #' @param pushover_app_token Pushover application (API) token used to deliver
 #'   the 2FA code. Per-user keys are stored encrypted in the database.
-#' @param pushover_title Title of the Pushover notification.
+#' @param pushover_title Title of the Pushover notification. If \code{NULL}, a
+#'   default title is used.
 #' @param twofa_window Seconds the 2FA code stays valid.
 #' @param max_attempts Maximum wrong 2FA attempts before returning to login.
 #' @param remember_device If \code{TRUE}, a valid device cookie skips 2FA.
 #' @param device_ttl_hours Lifetime of the device cookie/token, in hours.
+#' @param check_credentials Function returned by \code{check_credentials_local}.
+#' @param session Shiny session.
 #'
 #' @return \code{secure_server_local()} returns reactive values with user
 #'   information.
@@ -230,13 +233,14 @@ secure_app_local <- function(ui,
 secure_server_local <- function(check_credentials,
                                 db,
                                 pushover_app_token = Sys.getenv("PUSHOVER_APP"),
-                                pushover_title = "C\u00f3digo de acceso",
+                                pushover_title = NULL,
                                 twofa_window = 30,
                                 max_attempts = 5,
                                 remember_device = TRUE,
                                 device_ttl_hours = 24,
                                 timeout = 15,
                                 session = shiny::getDefaultReactiveDomain()) {
+  if (is.null(pushover_title)) pushover_title <- "C\u00f3digo de acceso"
   input <- session$input
   output <- session$output
 
