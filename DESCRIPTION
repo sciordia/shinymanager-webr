@@ -1,6 +1,6 @@
 Package: shinymanager.webr
 Title: Lightweight Auth0 Access Container for 'Shiny' and 'webR'
-Version: 0.1.1
+Version: 0.2.0
 Authors@R: c(
     person("Benoit", "Thieurmel", email = "bthieurmel@gmail.com", role = c("aut", "cre")),
     person("Victor", "Perrier", email = "victor.perrier@dreamRs.fr", role = c("aut"))
@@ -15,10 +15,19 @@ Description: Lightweight access container for 'Shiny' applications running with
 License: GPL-3
 URL: https://github.com/datastorm-open/shinymanager-webr
 Encoding: UTF-8
-RoxygenNote: 7.3.3
-Imports: 
+Imports:
     R6,
     shiny,
-    htmltools
-Suggests: 
-    testthat (>= 2.1.0)
+    htmltools,
+    jsonlite,
+    muiMaterial
+Suggests:
+    testthat (>= 3.0.0),
+    withr,
+    DBI,
+    duckdb,
+    sodium,
+    openssl,
+    pushoverr
+Config/testthat/edition: 3
+Config/roxygen2/version: 8.0.0
