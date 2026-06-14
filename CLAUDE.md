@@ -88,9 +88,10 @@ duckdb, send it via Pushover → 2FA screen (six cells) → on success mint the 
 `.tok`), set the device cookie, and reload into the app. Profile fields (stored as JSON in the user
 row) are exposed to the session exactly like the external variant's `user_info`.
 
-- `secure_app_local(ui, ...)` — UI gate. When the token is invalid it renders a `uiOutput` shell
-  (plus `muiMaterialDependency()`, `device-cookie.js`, `twofa.js`, `styles-local.css`) that the
-  server fills with the login or 2FA screen.
+- `secure_app_local(ui, ...)` — UI gate. When the token is invalid it renders a
+  `muiMaterial::muiMaterialPage()` (with `CssBaseline()`) hosting both the login and 2FA screens as
+  static `conditionalPanel`s toggled by `output.sm_stage`. Auth CSS/JS (`styles-local.css`,
+  `device-cookie.js`, `twofa.js`) are injected via the `sm_auth_dependency()` htmlDependency.
 - `secure_server_local(check_credentials, db, pushover_app_token, ...)` — the login/2FA state
   machine (`rv$stage` = login/twofa), device-cookie checks, resend/cancel, logout and timeout
   (reusing the external scaffolding). Returns reactive values with the user profile.
@@ -140,6 +141,12 @@ unused since the classic login UI was removed.
   (`external_input` argument). Keep server/JS input names in sync when changing it.
 - Build auth UI with **muiMaterial** components (`Box`, `Typography`, `Button.shinyInput`,
   `TextField.shinyInput`, ...). They carry their own React dependencies automatically.
+- Auth pages must use `muiMaterial::muiMaterialPage()` + `CssBaseline()` (Bootstrap suppressed),
+  **never** `shiny::fluidPage()` — mixing Bootstrap with Material UI breaks MUI's rem sizing (per
+  muiMaterial's "CSS conflicts with Bootstrap" guidance). The `theme` argument of the `secure_app_*`
+  functions is deprecated/ignored as a result. Inject auth assets via `sm_auth_dependency()`
+  (`R/shiny-utils.R`), not a `tags$head()` inside the page. The authenticated app's `ui` is the
+  developer's responsibility, but examples/docs model muiMaterial there too (no `fluidPage`).
 - Server-variant code must keep heavy deps optional: declare them in `Suggests` and guard every use
   with `require_pkg("<pkg>")` (in `R/crypto.R`) + `pkg::fn()`. Never promote `duckdb`, `DBI`,
   `sodium`, `openssl` or `pushoverr` to `Imports` — that would break webR installation.

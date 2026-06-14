@@ -39,7 +39,9 @@ secure_server_local(
 
 \item{ui}{UI of the application (shown once authenticated).}
 
-\item{theme}{Alternative Bootstrap stylesheet for the auth page.}
+\item{theme}{Deprecated and ignored. The authentication page is now built
+with \code{muiMaterial::muiMaterialPage()} (Material UI), which suppresses
+Bootstrap; this argument no longer applies.}
 
 \item{language}{Language used for shinymanager metadata.}
 

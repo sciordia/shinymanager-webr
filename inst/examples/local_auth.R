@@ -48,10 +48,16 @@ add_user(
 )
 
 # --- app --------------------------------------------------------------------
+# The protected app UI uses muiMaterial too (no fluidPage/Bootstrap), so styling
+# stays consistent with the muiMaterial login/2FA screens.
 ui <- secure_app_local(
-  ui = fluidPage(
-    h2("Protected app (server variant)"),
-    verbatimTextOutput("whoami")
+  ui = tagList(
+    muiMaterial::CssBaseline(),
+    muiMaterial::Box(
+      sx = list(p = 3),
+      muiMaterial::Typography("Protected app (server variant)", variant = "h4"),
+      verbatimTextOutput("whoami")
+    )
   ),
   twofa_window = 30
 )

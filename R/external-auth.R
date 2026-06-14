@@ -8,7 +8,9 @@
 #' @param waiting_ui UI shown while waiting for the external identity.
 #' @param head_auth Tags to add to the authentication page head, typically Auth0
 #'   scripts.
-#' @param theme Alternative Bootstrap stylesheet.
+#' @param theme Deprecated and ignored. The authentication page is now built
+#'   with \code{muiMaterial::muiMaterialPage()} (Material UI), which suppresses
+#'   Bootstrap; this argument no longer applies.
 #' @param language Language used for shinymanager metadata.
 #' @param timeout Timeout session in minutes before logout if sleeping. Use 0 to
 #'   disable.
@@ -53,22 +55,17 @@ secure_app_external <- function(ui,
   lan <- use_language(language)
   ui <- force(ui)
   head_auth <- force(head_auth)
-  if (is.null(theme)) {
-    theme <- "shinymanager/css/readable.min.css"
-  }
   if (is.null(waiting_ui)) {
     waiting_ui <- tags$div(
       class = "panel-auth",
-      tags$br(), tags$div(style = "height: 70px;"), tags$br(),
-      tags$div(
-        class = "panel panel-primary",
-        style = "max-width: 520px; margin: 0 auto;",
-        tags$div(
-          class = "panel-body",
-          style = "text-align: center;",
-          tags$h3(lan$get("Please authenticate")),
-          tags$p("Waiting for external authentication.")
-        )
+      muiMaterial::Box(
+        sx = list(
+          display = "flex", flexDirection = "column",
+          alignItems = "center", justifyContent = "center",
+          minHeight = "100vh", padding = 2, textAlign = "center"
+        ),
+        muiMaterial::Typography(lan$get("Please authenticate"), variant = "h5", gutterBottom = TRUE),
+        muiMaterial::Typography("Waiting for external authentication.", variant = "body2")
       )
     )
   }
@@ -100,12 +97,10 @@ secure_app_external <- function(ui,
         if (isTRUE(timeout)) singleton(tags$head(tags$script(src = "shinymanager/timeout.js")))
       )
     } else {
-      fluidPage(
-        theme = theme,
-        singleton(tags$head(
-          tags$link(href = "shinymanager/styles-auth.css", rel = "stylesheet"),
-          head_auth
-        )),
+      muiMaterial::muiMaterialPage(
+        useFontRoboto = TRUE,
+        muiMaterial::CssBaseline(),
+        sm_auth_dependency(stylesheet = "styles-auth.css", head_auth = head_auth),
         waiting_ui,
         shinymanager_where("authentication"),
         shinymanager_language(lan$get_language())

@@ -1,3 +1,20 @@
+# shinymanager.webr 0.2.2
+
+## Fixes
+
+* Authentication screens are now built with `muiMaterial::muiMaterialPage()` +
+  `CssBaseline()` instead of `shiny::fluidPage()`, following muiMaterial's
+  guidance. Previously the Material UI login/2FA/welcome components were rendered
+  inside `fluidPage()`, mixing Bootstrap with Material UI; Bootstrap's
+  `html { font-size: 10px }` broke MUI's rem-based sizing (e.g. `Typography()`
+  rendered too small). Bootstrap is now suppressed on the auth page.
+* The `theme` argument of `secure_app_external()` / `secure_app_local()` is
+  deprecated and ignored (Bootstrap no longer applies to the auth page).
+* Auth assets are injected via an `htmlDependency` so they reach the document
+  `<head>` under `muiMaterialPage()`.
+* Examples and README now build the protected app UI from muiMaterial components
+  too, instead of `fluidPage()`.
+
 # shinymanager.webr 0.2.1
 
 ## Fixes

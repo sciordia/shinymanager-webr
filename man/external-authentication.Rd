@@ -41,7 +41,9 @@ secure_server_external(
 \item{head_auth}{Tags to add to the authentication page head, typically Auth0
 scripts.}
 
-\item{theme}{Alternative Bootstrap stylesheet.}
+\item{theme}{Deprecated and ignored. The authentication page is now built
+with \code{muiMaterial::muiMaterialPage()} (Material UI), which suppresses
+Bootstrap; this argument no longer applies.}
 
 \item{language}{Language used for shinymanager metadata.}
 
