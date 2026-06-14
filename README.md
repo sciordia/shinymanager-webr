@@ -16,6 +16,12 @@ Heavy dependencies for the server variant (`DBI`, `duckdb`, `sodium`, `openssl`,
 `pushoverr`) are declared in `Suggests` and loaded on demand, so the package
 still installs in webR — the webR path never touches them.
 
+The authentication screens are rendered with `muiMaterial::muiMaterialPage()` +
+`CssBaseline()` (Bootstrap suppressed), following muiMaterial's guidance. Do not
+mix `shiny::fluidPage()` with Material UI components on the same page; when your
+protected app uses muiMaterial, build its UI from muiMaterial components too (see
+the examples below) rather than `fluidPage()`.
+
 ## Install
 
 ```r
@@ -33,7 +39,12 @@ library(shiny)
 library(shinymanager.webr)
 
 ui <- secure_app_external(
-  ui = fluidPage(h2("Protected app"), verbatimTextOutput("auth")),
+  ui = tagList(
+    muiMaterial::CssBaseline(),
+    muiMaterial::Box(sx = list(p = 3),
+      muiMaterial::Typography("Protected app", variant = "h4"),
+      verbatimTextOutput("auth"))
+  ),
   waiting_ui = welcome_panel(
     muiMaterial::Typography("Welcome to the application", variant = "h5"),
     logo = "https://www.r-project.org/logo/Rlogo.png",
@@ -89,7 +100,12 @@ add_user(db, email = "user@example.org", password = "S3cr3t!",
          profile = list(lab = "Genomics"))
 
 ui <- secure_app_local(
-  ui = fluidPage(h2("Protected app"), verbatimTextOutput("auth"))
+  ui = tagList(
+    muiMaterial::CssBaseline(),
+    muiMaterial::Box(sx = list(p = 3),
+      muiMaterial::Typography("Protected app", variant = "h4"),
+      verbatimTextOutput("auth"))
+  )
 )
 
 server <- function(input, output, session) {

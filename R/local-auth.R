@@ -152,7 +152,9 @@ send_2fa <- function(db, user_id, code, pushover_app_token, title = "C\u00f3digo
 #' @rdname local-authentication
 #'
 #' @param ui UI of the application (shown once authenticated).
-#' @param theme Alternative Bootstrap stylesheet for the auth page.
+#' @param theme Deprecated and ignored. The authentication page is now built
+#'   with \code{muiMaterial::muiMaterialPage()} (Material UI), which suppresses
+#'   Bootstrap; this argument no longer applies.
 #' @param language Language used for shinymanager metadata.
 #' @param timeout For \code{secure_app_local}, logical; whether to include the
 #'   inactivity-timeout script. For \code{secure_server_local}, timeout in
@@ -173,7 +175,6 @@ secure_app_local <- function(ui,
   lan <- use_language(language)
   ui <- force(ui)
   head_auth <- force(head_auth)
-  if (is.null(theme)) theme <- "shinymanager/css/readable.min.css"
 
   function(request) {
     query <- parseQueryString(request$QUERY_STRING)
@@ -194,15 +195,14 @@ secure_app_local <- function(ui,
         if (isTRUE(timeout)) singleton(tags$head(tags$script(src = "shinymanager/timeout.js")))
       )
     } else {
-      fluidPage(
-        theme = theme,
-        singleton(tags$head(
-          tags$link(href = "shinymanager/styles-auth.css", rel = "stylesheet"),
-          tags$link(href = "shinymanager/styles-local.css", rel = "stylesheet"),
-          tags$script(src = "shinymanager/device-cookie.js"),
-          tags$script(src = "shinymanager/twofa.js"),
-          head_auth
-        )),
+      muiMaterial::muiMaterialPage(
+        useFontRoboto = TRUE,
+        muiMaterial::CssBaseline(),
+        sm_auth_dependency(
+          stylesheet = c("styles-auth.css", "styles-local.css"),
+          script = c("device-cookie.js", "twofa.js"),
+          head_auth = head_auth
+        ),
         tags$div(
           class = "panel-auth",
           tags$div(style = "display:none;", textOutput("sm_stage")),

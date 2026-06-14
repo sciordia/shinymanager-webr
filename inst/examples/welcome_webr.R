@@ -12,9 +12,13 @@ library(shiny)
 library(shinymanager.webr)
 
 ui <- secure_app_external(
-  ui = fluidPage(
-    h2("Protected app (webR variant)"),
-    verbatimTextOutput("whoami")
+  ui = tagList(
+    muiMaterial::CssBaseline(),
+    muiMaterial::Box(
+      sx = list(p = 3),
+      muiMaterial::Typography("Protected app (webR variant)", variant = "h4"),
+      verbatimTextOutput("whoami")
+    )
   ),
   waiting_ui = welcome_panel(
     muiMaterial::Typography("Welcome to the application", variant = "h5"),

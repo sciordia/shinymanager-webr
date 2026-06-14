@@ -41,7 +41,14 @@
 #'   library(shinymanager.webr)
 #'
 #'   ui <- secure_app_external(
-#'     ui = fluidPage(h2("App protegida"), verbatimTextOutput("auth")),
+#'     ui = tagList(
+#'       muiMaterial::CssBaseline(),
+#'       muiMaterial::Box(
+#'         sx = list(p = 3),
+#'         muiMaterial::Typography("App protegida", variant = "h4"),
+#'         verbatimTextOutput("auth")
+#'       )
+#'     ),
 #'     waiting_ui = welcome_panel(
 #'       muiMaterial::Typography("Bienvenido a la aplicacion", variant = "h5"),
 #'       logo = "https://www.r-project.org/logo/Rlogo.png",
