@@ -14,6 +14,9 @@
 #'   takes \code{user} (email) and \code{password} and returns a list with
 #'   \code{result}, \code{expired}, \code{authorized} and \code{user_info}.
 #'
+#' @seealso A runnable example app:
+#'   \code{system.file("examples", "local_auth.R", package = "shinymanager.webr")}.
+#'
 #' @name local-authentication
 #' @export
 check_credentials_local <- function(db, allowed_roles = NULL) {

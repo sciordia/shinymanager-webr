@@ -85,3 +85,7 @@ Use these helpers when authentication is handled before Shiny, for example by
 Auth0 or Cloudflare Access. In this mode shinymanager only creates its session
 token and applies lightweight authorization rules.
 }
+\seealso{
+\code{\link{welcome_panel}}. A runnable example app:
+  \code{system.file("examples", "welcome_webr.R", package = "shinymanager.webr")}.
+}

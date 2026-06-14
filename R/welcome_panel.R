@@ -27,7 +27,8 @@
 #' @return A \code{shiny.tag} suitable as the \code{waiting_ui} argument of
 #'   \code{\link{secure_app_external}}.
 #'
-#' @seealso \code{\link{secure_app_external}}
+#' @seealso \code{\link{secure_app_external}}. A runnable example app:
+#'   \code{system.file("examples", "welcome_webr.R", package = "shinymanager.webr")}.
 #'
 #' @export
 #'

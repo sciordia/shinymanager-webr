@@ -84,3 +84,7 @@ authentication. The application code is not exposed to the browser, so a real
 login form is shown. Passwords are hashed with Argon2id and the per-user
 Pushover key is stored encrypted. All heavy dependencies are Suggests.
 }
+\seealso{
+A runnable example app:
+  \code{system.file("examples", "local_auth.R", package = "shinymanager.webr")}.
+}

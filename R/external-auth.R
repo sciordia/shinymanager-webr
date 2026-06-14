@@ -34,6 +34,9 @@
 #'   \code{secure_server_external()} returns reactive values with user
 #'   information.
 #'
+#' @seealso \code{\link{welcome_panel}}. A runnable example app:
+#'   \code{system.file("examples", "welcome_webr.R", package = "shinymanager.webr")}.
+#'
 #' @name external-authentication
 #' @export
 secure_app_external <- function(ui,

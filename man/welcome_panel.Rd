@@ -78,5 +78,6 @@ if (interactive()) {
 }
 }
 \seealso{
-\code{\link{secure_app_external}}
+\code{\link{secure_app_external}}. A runnable example app:
+  \code{system.file("examples", "welcome_webr.R", package = "shinymanager.webr")}.
 }
