@@ -1,0 +1,35 @@
+/* Styling for the local (server) login and 2FA screens. */
+.sm-2fa-cells {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin: 16px 0;
+}
+
+.sm-2fa-cell {
+  width: 48px;
+  height: 56px;
+  text-align: center;
+  font-size: 24px;
+  border: 1px solid #c4c4c4;
+  border-radius: 8px;
+  outline: none;
+  font-family: inherit;
+}
+
+.sm-2fa-cell:focus {
+  border-color: #1976d2;
+  box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.2);
+}
+
+.sm-local-card {
+  max-width: 420px;
+  margin: 0 auto;
+}
+
+.sm-local-error {
+  color: #d32f2f;
+  text-align: center;
+  margin-top: 8px;
+  min-height: 20px;
+}
