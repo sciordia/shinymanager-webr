@@ -1,16 +1,20 @@
 # shinymanager.webr
 
-Lightweight external-authentication container for Shiny apps running with webR/WebAssembly.
+Lightweight access container for Shiny apps, with two deployment variants that
+share one package. All authentication UI is built with
+[muiMaterial](https://felixluginbuhl.com/muiMaterial/) (Material UI).
 
-`shinymanager.webr` is a small fork of `shinymanager` focused on one flow:
+1. **webR / external** — for apps running in the browser with webR/WebAssembly.
+   Authentication is delegated to an external provider (Auth0/OIDC) or simply
+   gated by a button. There is no credentials form, and the application HTML
+   stays hidden inside the container until access is granted.
+2. **local / server** — for apps hosted on a real server (code not exposed).
+   Credential login against a [duckdb](https://duckdb.org/) user store, with
+   passwords hashed using Argon2id and a Pushover two-factor step.
 
-1. Wait for an external identity provider such as Auth0.
-2. Authorize the identity by email and/or email domain.
-3. Create a local session token.
-4. Reveal the Shiny application.
-5. Provide a floating logout button that clears the local token and redirects to Auth0, or calls a JavaScript logout callback.
-
-Classic username/password login, SQLite/SQL credential storage, admin panels, password management, and heavy dependencies are intentionally not part of this package.
+Heavy dependencies for the server variant (`DBI`, `duckdb`, `sodium`, `openssl`,
+`pushoverr`) are declared in `Suggests` and loaded on demand, so the package
+still installs in webR — the webR path never touches them.
 
 ## Install
 
@@ -18,52 +22,105 @@ Classic username/password login, SQLite/SQL credential storage, admin panels, pa
 remotes::install_local("path/to/shinymanager-webr")
 ```
 
-## Example
+## Variant 1 — webR / external
+
+Delegate to an external provider, or use `welcome_panel()` as a button-only gate
+(no login). The button injects a configurable identity that
+`check_credentials_external()` authorizes.
 
 ```r
 library(shiny)
 library(shinymanager.webr)
 
 ui <- secure_app_external(
-  fluidPage(
-    h2("Proteomics app")
+  ui = fluidPage(h2("Protected app"), verbatimTextOutput("auth")),
+  waiting_ui = welcome_panel(
+    muiMaterial::Typography("Welcome to the application", variant = "h5"),
+    logo = "https://www.r-project.org/logo/Rlogo.png",
+    button_label = "Enter",
+    button_id = "no_login"
   )
 )
 
 server <- function(input, output, session) {
   auth <- secure_server_external(
-    check_credentials = check_credentials_external(
-      allowed_domains = "cnb.csic.es",
-      require_verified_email = TRUE
-    ),
-    external_input = "auth0_user",
-    logout_url = "https://TU_DOMINIO_AUTH0/v2/logout?client_id=TU_CLIENT_ID&returnTo=https%3A%2F%2Ftu-app"
+    check_credentials = check_credentials_external(),  # open gate
+    external_input = "no_login",
+    timeout = 0
   )
+  output$auth <- renderPrint(reactiveValuesToList(auth))
 }
 
 shinyApp(ui, server)
 ```
 
-From JavaScript/Auth0, send the resolved identity to Shiny:
+For Auth0/OIDC, restrict by email/domain and push the identity from JavaScript:
+
+```r
+check_credentials_external(allowed_domains = "cnb.csic.es", require_verified_email = TRUE)
+```
 
 ```js
 Shiny.setInputValue("auth0_user", {
-  email: user.email,
-  name: user.name,
-  sub: user.sub,
-  email_verified: user.email_verified,
-  auth_provider: "auth0"
+  email: user.email, name: user.name, sub: user.sub,
+  email_verified: user.email_verified, auth_provider: "auth0"
 }, { priority: "event" });
 ```
 
+Full example: `system.file("examples", "welcome_webr.R", package = "shinymanager.webr")`.
+
+## Variant 2 — local / server (login + 2FA)
+
+Email + password against duckdb, then a 6-digit Pushover code (valid 30s, with
+attempt limiting). A per-device cookie can skip 2FA for 24h. The user profile is
+exposed to the session like the external variant's `user_info`.
+
+```r
+library(shiny)
+library(shinymanager.webr)
+
+Sys.setenv(SHINYMANAGER_KEY = "<a-long-random-secret>")  # encrypts stored Pushover keys
+
+# One-off provisioning
+db <- "users.duckdb"
+create_user_db(db)
+add_user(db, email = "user@example.org", password = "S3cr3t!",
+         pushover_user_key = "<user-pushover-key>", name = "User", role = "admin",
+         profile = list(lab = "Genomics"))
+
+ui <- secure_app_local(
+  ui = fluidPage(h2("Protected app"), verbatimTextOutput("auth"))
+)
+
+server <- function(input, output, session) {
+  auth <- secure_server_local(
+    check_credentials = check_credentials_local(db),
+    db = db,
+    pushover_app_token = Sys.getenv("PUSHOVER_APP")
+  )
+  output$auth <- renderPrint(reactiveValuesToList(auth))
+}
+
+shinyApp(ui, server)
+```
+
+- **Passwords** are hashed one-way with Argon2id (`sodium`).
+- **Pushover user keys** are encrypted (reversible, AES-CBC via `openssl`) with the
+  master key from the `SHINYMANAGER_KEY` environment variable.
+- Set `PUSHOVER_APP` to your Pushover application (API) token.
+
+Full example (incl. a no-Pushover testing tip):
+`system.file("examples", "local_auth.R", package = "shinymanager.webr")`.
+
 ## Logout
 
-If `logout_url` is supplied, the floating logout button removes the local `shinymanager.webr` token, clears the local URL, and redirects the browser to the Auth0 logout URL.
-
-Alternatively, pass `logout_callback = "nombreFuncionGlobal"` and define:
+Both variants render a floating logout button (`fab_button()`) that removes the
+local session token. In the external variant, supplying `logout_url` redirects
+the browser to the provider's logout URL after clearing the token; alternatively
+`logout_callback = "globalFnName"` calls a JavaScript function:
 
 ```js
-window.nombreFuncionGlobal = function(message) {
+window.globalFnName = function(message) {
   // Auth0 SDK logout flow here.
 };
 ```
@@ -71,11 +128,15 @@ window.nombreFuncionGlobal = function(message) {
 ## Public API
 
 ```r
-secure_app_external()
-secure_server_external()
-check_credentials_external()
-fab_button()
-use_language()
-set_labels()
-get_labels()
+# External / webR variant
+secure_app_external(); secure_server_external(); check_credentials_external()
+welcome_panel()
+
+# Local / server variant
+secure_app_local(); secure_server_local(); check_credentials_local()
+create_user_db(); add_user()
+hash_password(); verify_password(); encrypt_secret(); decrypt_secret()
+
+# Shared
+fab_button(); use_language(); set_labels(); get_labels()
 ```
