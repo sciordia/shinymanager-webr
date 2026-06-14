@@ -1,3 +1,15 @@
+# shinymanager.webr 0.2.1
+
+## Fixes
+
+* The local/server example (`inst/examples/local_auth.R`) is now runnable
+  out-of-the-box: it sets a default `SHINYMANAGER_KEY` if none is present,
+  re-seeds a fresh database each run with `create_user_db(overwrite = TRUE)`,
+  and prints the 2FA code to the console (demo mode) so the full flow works
+  without a Pushover account. Previously a first run without `SHINYMANAGER_KEY`
+  left an empty database that later runs reused, so the documented credentials
+  returned "invalid credentials".
+
 # shinymanager.webr 0.2.0
 
 ## New features
