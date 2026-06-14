@@ -14,3 +14,8 @@ inst/demo_app/rsconnect
 qf_pg_template.yml
 test_db.R
 .DS_Store
+
+# R build / check artifacts
+*.tar.gz
+*.Rcheck/
+..Rcheck/
