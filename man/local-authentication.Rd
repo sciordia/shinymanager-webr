@@ -65,14 +65,22 @@ default title is used.}
 
 \item{remember_device}{If \code{TRUE}, a valid device cookie skips 2FA.}
 
-\item{device_ttl_hours}{Lifetime of the device cookie/token, in hours.}
+\item{device_ttl_hours}{Default lifetime of the device cookie/token, in hours,
+used for users that have no per-user \code{device_ttl_hours} of their own
+(see \code{\link{add_user}}/\code{\link{set_user_settings}}). Whether 2FA is
+required at all is also decided per user (\code{twofa_enabled}); users with
+2FA disabled log in straight after a valid password.}
 
 \item{session}{Shiny session.}
 }
 \value{
 \code{check_credentials_local()} returns a validation function that
   takes \code{user} (email) and \code{password} and returns a list with
-  \code{result}, \code{expired}, \code{authorized} and \code{user_info}.
+  \code{result}, \code{expired}, \code{authorized}, \code{user_info}, and the
+  per-user policy fields \code{twofa_enabled} (logical) and
+  \code{device_ttl_hours} (numeric or \code{NA}). The policy fields are kept
+  out of \code{user_info} (which is exposed to the app and stored in the
+  session token).
 
 \code{secure_app_local()} returns a UI function.
 

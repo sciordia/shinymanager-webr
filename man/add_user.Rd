@@ -12,6 +12,8 @@ add_user(
   name = NULL,
   role = "user",
   profile = list(),
+  twofa_enabled = TRUE,
+  device_ttl_hours = NULL,
   user_id = NULL
 )
 }
@@ -31,6 +33,15 @@ storage). Required to deliver the 2FA code.}
 
 \item{profile}{Optional named list of extra profile fields, stored as JSON and
 exposed to the session after login.}
+
+\item{twofa_enabled}{Whether this user must complete the Pushover two-factor
+step after a valid password. \code{TRUE} (default) keeps the 2FA challenge;
+\code{FALSE} logs the user straight into the app once credentials match.
+Stored per user in the database.}
+
+\item{device_ttl_hours}{Per-user lifetime (in hours) of the "remember this
+device" token that skips 2FA on later logins. \code{NULL} (default) means
+the user has no override and the server's \code{device_ttl_hours} applies.}
 
 \item{user_id}{Optional explicit user id (defaults to a random token).}
 }
