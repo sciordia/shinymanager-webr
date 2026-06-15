@@ -37,7 +37,7 @@
 #'   information.
 #'
 #' @seealso \code{\link{welcome_panel}}. A runnable example app:
-#'   \code{system.file("examples", "welcome_webr.R", package = "shinymanager.webr")}.
+#'   \code{system.file("examples", "welcome_webr.R", package = "authlas")}.
 #'
 #' @name external-authentication
 #' @export
@@ -94,7 +94,7 @@ secure_app_external <- function(ui,
         ui, menu, shinymanager_where("application"),
         shinymanager_language(lan$get_language()),
         singleton(tags$head(tags$script(HTML(external_logout_handler_js())))),
-        if (isTRUE(timeout)) singleton(tags$head(tags$script(src = "shinymanager/timeout.js")))
+        if (isTRUE(timeout)) singleton(tags$head(tags$script(src = "authlas/timeout.js")))
       )
     } else {
       muiMaterial::muiMaterialPage(

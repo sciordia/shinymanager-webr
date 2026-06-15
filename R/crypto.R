@@ -45,12 +45,14 @@ verify_password <- function(password, hash) {
   isTRUE(sodium::password_verify(hash, password))
 }
 
-# Resolve the 32-byte master key from the SHINYMANAGER_KEY environment variable.
+# Resolve the 32-byte master key from the AUTHLAS_KEY environment variable. For
+# backward compatibility, fall back to the legacy SHINYMANAGER_KEY if it is set.
 sm_master_key <- function() {
   require_pkg("openssl")
-  secret <- Sys.getenv("SHINYMANAGER_KEY", "")
+  secret <- Sys.getenv("AUTHLAS_KEY", "")
+  if (!nzchar(secret)) secret <- Sys.getenv("SHINYMANAGER_KEY", "")
   if (!nzchar(secret)) {
-    stop("Set the SHINYMANAGER_KEY environment variable to encrypt/decrypt Pushover keys.", call. = FALSE)
+    stop("Set the AUTHLAS_KEY environment variable to encrypt/decrypt Pushover keys.", call. = FALSE)
   }
   openssl::sha256(charToRaw(secret))
 }
@@ -59,8 +61,9 @@ sm_master_key <- function() {
 #'
 #' @description Symmetric AES-CBC encryption used to store each user's Pushover
 #'   user key, which must later be decrypted to send the 2FA notification. The
-#'   master key is read from the \code{SHINYMANAGER_KEY} environment variable.
-#'   Never called in webR.
+#'   master key is read from the \code{AUTHLAS_KEY} environment variable (the
+#'   legacy \code{SHINYMANAGER_KEY} is still honored as a fallback). Never called
+#'   in webR.
 #'
 #' @param x A plain-text secret to encrypt.
 #' @param stored A string previously produced by \code{encrypt_secret()}.

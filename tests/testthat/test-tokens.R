@@ -1,6 +1,6 @@
 context("test-tokens")
 
-.tok <- shinymanager.webr:::.tokens$new()
+.tok <- authlas:::.tokens$new()
 
 token_one = "token_one"
 list_info_one <- list(user = "benoit", role = "full")

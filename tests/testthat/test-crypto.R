@@ -11,7 +11,7 @@ test_that("password hashing verifies correctly", {
 
 test_that("secret encryption round-trips with the master key", {
   skip_if_not_installed("openssl")
-  withr::local_envvar(SHINYMANAGER_KEY = "test-master-key-123")
+  withr::local_envvar(AUTHLAS_KEY = "test-master-key-123")
   enc <- encrypt_secret("uPushKey-abc")
   expect_true(grepl(":", enc, fixed = TRUE))
   expect_identical(decrypt_secret(enc), "uPushKey-abc")
@@ -20,8 +20,8 @@ test_that("secret encryption round-trips with the master key", {
 
 test_that("encrypt_secret requires the master key", {
   skip_if_not_installed("openssl")
-  withr::local_envvar(SHINYMANAGER_KEY = "")
-  expect_error(encrypt_secret("x"), "SHINYMANAGER_KEY")
+  withr::local_envvar(AUTHLAS_KEY = "", SHINYMANAGER_KEY = "")  # also clear the legacy fallback
+  expect_error(encrypt_secret("x"), "AUTHLAS_KEY")
 })
 
 test_that("2FA codes are six digits", {

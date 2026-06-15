@@ -1,8 +1,11 @@
-# shinymanager.webr
+# authlas
 
-Lightweight access container for Shiny apps, with two deployment variants that
-share one package. All authentication UI is built with
+Authentication and access container for Shiny apps, with two deployment variants
+that share one package. All authentication UI is built with
 [muiMaterial](https://felixluginbuhl.com/muiMaterial/) (Material UI).
+
+The name nods to Atlas, the Titan who upheld the sky: `authlas` upholds and
+controls the authentication and access gate of your application.
 
 1. **webR / external** — for apps running in the browser with webR/WebAssembly.
    Authentication is delegated to an external provider (Auth0/OIDC) or simply
@@ -25,7 +28,7 @@ the examples below) rather than `fluidPage()`.
 ## Install
 
 ```r
-remotes::install_local("path/to/shinymanager-webr")
+remotes::install_local("path/to/authlas")
 ```
 
 ## Variant 1 — webR / external
@@ -36,7 +39,7 @@ Delegate to an external provider, or use `welcome_panel()` as a button-only gate
 
 ```r
 library(shiny)
-library(shinymanager.webr)
+library(authlas)
 
 ui <- secure_app_external(
   ui = tagList(
@@ -78,7 +81,7 @@ Shiny.setInputValue("auth0_user", {
 }, { priority: "event" });
 ```
 
-Full example: `system.file("examples", "welcome_webr.R", package = "shinymanager.webr")`.
+Full example: `system.file("examples", "welcome_webr.R", package = "authlas")`.
 
 ## Variant 2 — local / server (login + 2FA)
 
@@ -101,9 +104,9 @@ versions gain these columns automatically the first time they are opened.
 
 ```r
 library(shiny)
-library(shinymanager.webr)
+library(authlas)
 
-Sys.setenv(SHINYMANAGER_KEY = "<a-long-random-secret>")  # encrypts stored Pushover keys
+Sys.setenv(AUTHLAS_KEY = "<a-long-random-secret>")  # encrypts stored Pushover keys
 
 # One-off provisioning
 db <- "users.duckdb"
@@ -136,11 +139,12 @@ shinyApp(ui, server)
 
 - **Passwords** are hashed one-way with Argon2id (`sodium`).
 - **Pushover user keys** are encrypted (reversible, AES-CBC via `openssl`) with the
-  master key from the `SHINYMANAGER_KEY` environment variable.
+  master key from the `AUTHLAS_KEY` environment variable (the legacy
+  `SHINYMANAGER_KEY` is still honored as a fallback).
 - Set `PUSHOVER_APP` to your Pushover application (API) token.
 
 Full example (incl. a no-Pushover testing tip):
-`system.file("examples", "local_auth.R", package = "shinymanager.webr")`.
+`system.file("examples", "local_auth.R", package = "authlas")`.
 
 ## Logout
 
@@ -170,3 +174,9 @@ hash_password(); verify_password(); encrypt_secret(); decrypt_secret()
 # Shared
 fab_button(); use_language(); set_labels(); get_labels()
 ```
+
+## License & provenance
+
+GPL-3. `authlas` was originally derived from the
+[shinymanager](https://github.com/datastorm-open/shinymanager) package (GPL-3)
+and has since evolved into a standalone package with a different feature set.

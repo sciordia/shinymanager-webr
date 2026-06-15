@@ -96,5 +96,5 @@ Pushover key is stored encrypted. All heavy dependencies are Suggests.
 }
 \seealso{
 A runnable example app:
-  \code{system.file("examples", "local_auth.R", package = "shinymanager.webr")}.
+  \code{system.file("examples", "local_auth.R", package = "authlas")}.
 }

@@ -1,3 +1,17 @@
+# authlas 0.4.0
+
+## Breaking changes
+
+* **The package has been renamed from `shinymanager.webr` to `authlas`** and is now a standalone
+  package (no longer presented as a fork of `shinymanager`, from which it was originally derived,
+  GPL-3). Update `library(shinymanager.webr)` to `library(authlas)`.
+* The master-key environment variable is now **`AUTHLAS_KEY`**. The legacy `SHINYMANAGER_KEY` is
+  still read as a fallback when `AUTHLAS_KEY` is unset, so existing deployments keep working.
+* Bundled assets are now served from the `authlas/` Shiny resource path (was `shinymanager/`). This
+  is internal; apps using the public API are unaffected.
+
+Internal Shiny input ids, the device cookie (`shinymanager_device`) and CSS classes are unchanged.
+
 # shinymanager.webr 0.3.0
 
 ## Features

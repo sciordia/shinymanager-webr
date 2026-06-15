@@ -31,7 +31,7 @@ Create a fixed button in page corner with additional button(s) in it
 }
 \examples{
 library(shiny)
-library(shinymanager.webr)
+library(authlas)
 
 ui <- fluidPage(
 

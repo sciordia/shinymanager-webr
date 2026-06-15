@@ -21,6 +21,7 @@ decrypt_secret(stored)
 \description{
 Symmetric AES-CBC encryption used to store each user's Pushover
   user key, which must later be decrypted to send the 2FA notification. The
-  master key is read from the \code{SHINYMANAGER_KEY} environment variable.
-  Never called in webR.
+  master key is read from the \code{AUTHLAS_KEY} environment variable (the
+  legacy \code{SHINYMANAGER_KEY} is still honored as a fallback). Never called
+  in webR.
 }

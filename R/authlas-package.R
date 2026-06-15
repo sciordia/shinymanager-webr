@@ -1,4 +1,4 @@
-#' shinymanager.webr: lightweight access container for Shiny and webR
+#' authlas: authentication and access container for Shiny and webR
 #'
 #' Two access variants share one package: an external/no-login gate for apps
 #' running in the browser with webR, and a server variant with credential login,

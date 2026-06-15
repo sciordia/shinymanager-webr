@@ -1,9 +1,9 @@
-#' Adds the content of inst/assets/ to shinymanager/
+#' Adds the content of inst/assets/ to authlas/
 #'
 #' @importFrom shiny addResourcePath
 #'
 #' @noRd
 #'
 .onLoad <- function(...) {
-  shiny::addResourcePath("shinymanager", system.file("assets", package = "shinymanager.webr"))
+  shiny::addResourcePath("authlas", system.file("assets", package = "authlas"))
 }

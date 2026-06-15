@@ -9,7 +9,7 @@
 # jsonlite and muiMaterial. To deploy in webR, ship this app with shinylive.
 
 library(shiny)
-library(shinymanager.webr)
+library(authlas)
 
 ui <- secure_app_external(
   ui = tagList(

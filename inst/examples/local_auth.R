@@ -13,15 +13,15 @@
 #   ana@example.org    / S3cr3t!  -> 2FA disabled: logs straight into the app
 
 library(shiny)
-library(shinymanager.webr)
+library(authlas)
 
 # --- demo configuration (REPLACE for production) ----------------------------
 
 # Master key used to encrypt stored Pushover keys. For the demo we set a default
-# if none is present; in production set SHINYMANAGER_KEY via an environment
+# if none is present; in production set AUTHLAS_KEY via an environment
 # variable, keep it secret and stable, and remove this fallback.
-if (!nzchar(Sys.getenv("SHINYMANAGER_KEY"))) {
-  Sys.setenv(SHINYMANAGER_KEY = "demo-shinymanager-key-change-me")
+if (!nzchar(Sys.getenv("AUTHLAS_KEY"))) {
+  Sys.setenv(AUTHLAS_KEY = "demo-authlas-key-change-me")
 }
 
 # DEMO ONLY: print the 2FA code to the console instead of delivering it via
@@ -33,7 +33,7 @@ assignInNamespace(
     message(">>> [DEMO] 2FA code: ", code)
     TRUE
   },
-  "shinymanager.webr"
+  "authlas"
 )
 
 # --- database setup (re-seeded fresh on each run for the demo) ---------------
@@ -97,7 +97,7 @@ server <- function(input, output, session) {
 shinyApp(ui, server)
 
 # --- PRODUCTION NOTES -------------------------------------------------------
-# 1. Set SHINYMANAGER_KEY (a long, stable secret) via an environment variable
+# 1. Set AUTHLAS_KEY (a long, stable secret) via an environment variable
 #    and remove the fallback above.
 # 2. Remove the assignInNamespace(send_2fa, ...) demo block.
 # 3. Set PUSHOVER_APP to your Pushover application (API) token, and give each
