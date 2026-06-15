@@ -65,6 +65,53 @@ test_that("full login + 2FA flow authenticates and creates a device token", {
   })
 })
 
+test_that("a user with 2FA disabled logs in straight away", {
+  skip_if_no_db()
+  withr::local_envvar(SHINYMANAGER_KEY = "test-master-key-123")
+  local_mocked_bindings(send_2fa = function(...) stop("2FA should not be sent"))
+  dbf <- tempfile(fileext = ".duckdb")
+  create_user_db(dbf)
+  add_user(dbf, email = "direct@example.org", password = "S3cr3t!", twofa_enabled = FALSE)
+
+  testServer(make_server(dbf), {
+    session$setInputs(shinymanager_device = "")
+    session$setInputs(sm_email = "direct@example.org", sm_password = "S3cr3t!")
+    session$setInputs(sm_login = 1)
+    expect_true(session$userData$auth$result)
+    expect_identical(session$userData$auth$email, "direct@example.org")
+
+    con <- DBI::dbConnect(duckdb::duckdb(), dbdir = dbf)
+    uid <- db_get_user(con, "direct@example.org")$user_id
+    expect_null(db_get_twofa(con, uid))                 # no 2FA challenge created
+    DBI::dbDisconnect(con, shutdown = TRUE)
+  })
+})
+
+test_that("a per-user device_ttl_hours overrides the server default", {
+  skip_if_no_db()
+  withr::local_envvar(SHINYMANAGER_KEY = "test-master-key-123")
+  local_mocked_bindings(generate_2fa_code = function(digits = 6L) "123456")
+  local_mocked_bindings(send_2fa = function(db, user_id, code, pushover_app_token, title = "x") TRUE)
+  dbf <- tempfile(fileext = ".duckdb")
+  create_user_db(dbf)
+  add_user(dbf, email = "ttl@example.org", password = "S3cr3t!",
+           pushover_user_key = "K", device_ttl_hours = 100)
+
+  testServer(make_server(dbf), {           # server default device_ttl_hours = 24
+    session$setInputs(shinymanager_device = "")
+    session$setInputs(sm_email = "ttl@example.org", sm_password = "S3cr3t!")
+    session$setInputs(sm_login = 1)
+    session$setInputs(sm_2fa_code = "123456", sm_2fa_submit = 1)
+    expect_true(session$userData$auth$result)
+
+    con <- DBI::dbConnect(duckdb::duckdb(), dbdir = dbf)
+    dev <- DBI::dbGetQuery(con, "SELECT created_at, expires_at FROM device_tokens")
+    DBI::dbDisconnect(con, shutdown = TRUE)
+    # ~100h, not the server's 24h
+    expect_equal((dev$expires_at - dev$created_at) / 3600, 100, tolerance = 0.01)
+  })
+})
+
 test_that("a valid device cookie skips 2FA", {
   skip_if_no_db()
   withr::local_envvar(SHINYMANAGER_KEY = "test-master-key-123")
