@@ -89,5 +89,5 @@ token and applies lightweight authorization rules.
 }
 \seealso{
 \code{\link{welcome_panel}}. A runnable example app:
-  \code{system.file("examples", "welcome_webr.R", package = "shinymanager.webr")}.
+  \code{system.file("examples", "welcome_webr.R", package = "authlas")}.
 }

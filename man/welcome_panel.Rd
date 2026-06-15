@@ -53,7 +53,7 @@ Build an editable welcome screen, rendered with 'muiMaterial'
 \examples{
 if (interactive()) {
   library(shiny)
-  library(shinymanager.webr)
+  library(authlas)
 
   ui <- secure_app_external(
     ui = tagList(
@@ -86,5 +86,5 @@ if (interactive()) {
 }
 \seealso{
 \code{\link{secure_app_external}}. A runnable example app:
-  \code{system.file("examples", "welcome_webr.R", package = "shinymanager.webr")}.
+  \code{system.file("examples", "welcome_webr.R", package = "authlas")}.
 }

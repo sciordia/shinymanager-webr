@@ -91,7 +91,7 @@ create_user_db <- function(dbdir, overwrite = FALSE) {
 #' @title Add a user to the local credentials database
 #'
 #' @description Insert a user, hashing the password with Argon2id and encrypting
-#'   the Pushover user key with the master key (\code{SHINYMANAGER_KEY}).
+#'   the Pushover user key with the master key (\code{AUTHLAS_KEY}).
 #'   Server-only; never used in webR.
 #'
 #' @param dbdir Path to the duckdb file, or an open DBIConnection.

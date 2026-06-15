@@ -1,19 +1,20 @@
-Package: shinymanager.webr
-Title: Lightweight Auth0 Access Container for 'Shiny' and 'webR'
-Version: 0.3.0
-Authors@R: c(
-    person("Benoit", "Thieurmel", email = "bthieurmel@gmail.com", role = c("aut", "cre")),
-    person("Victor", "Perrier", email = "victor.perrier@dreamRs.fr", role = c("aut"))
-    )
-Author: Benoit Thieurmel [aut, cre],
-    Victor Perrier [aut]
-Maintainer: Benoit Thieurmel <bthieurmel@gmail.com>
-Description: Lightweight access container for 'Shiny' applications running with
-    'webR'. Authentication is delegated to an external provider such as Auth0,
-    while the package manages the intermediate access gate, user authorization,
-    session token, and logout button.
+Package: authlas
+Title: Authentication and Access Container for 'Shiny' and 'webR'
+Version: 0.4.0
+Authors@R:
+    person("Sergio", "Ciordia", email = "wardiam@gmail.com", role = c("aut", "cre"))
+Author: Sergio Ciordia [aut, cre]
+Maintainer: Sergio Ciordia <wardiam@gmail.com>
+Description: Authentication and access gate for 'Shiny' applications, with two
+    deployment variants sharing one package: an external/no-login gate for apps
+    running in the browser with 'webR' (identity delegated to a provider such as
+    Auth0), and a local/server variant with credential login against a 'duckdb'
+    user store, Argon2id password hashing and Pushover two-factor authentication.
+    The authentication UI is built with Material UI. Originally derived from the
+    'shinymanager' package (GPL-3).
 License: GPL-3
-URL: https://github.com/datastorm-open/shinymanager-webr
+URL: https://github.com/sciordia/authlas
+BugReports: https://github.com/sciordia/authlas/issues
 Encoding: UTF-8
 Imports:
     R6,

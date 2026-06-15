@@ -1,12 +1,12 @@
 # Auth-page assets as an htmlDependency, so the CSS/JS (and optional head_auth
 # tags) are injected into the document <head> even when the page is built with
 # muiMaterial::muiMaterialPage() (which constructs its own <html>/<head>). Files
-# are served from the registered "shinymanager" resource path (see onLoad.R).
+# are served from the registered "authlas" resource path (see onLoad.R).
 sm_auth_dependency <- function(stylesheet = NULL, script = NULL, head_auth = NULL) {
   htmltools::htmlDependency(
-    name = "shinymanager-auth",
-    version = as.character(utils::packageVersion("shinymanager.webr")),
-    src = c(href = "shinymanager"),
+    name = "authlas-auth",
+    version = as.character(utils::packageVersion("authlas")),
+    src = c(href = "authlas"),
     stylesheet = stylesheet,
     script = script,
     head = if (!is.null(head_auth)) as.character(htmltools::tagList(head_auth)) else NULL

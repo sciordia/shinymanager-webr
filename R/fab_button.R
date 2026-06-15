@@ -102,10 +102,10 @@ html_dependency_fab <- function() {
     name = "fab-button",
     version = "0.3.7",
     src = c(
-      href = "shinymanager/fab-button",
+      href = "authlas/fab-button",
       file = "assets/fab-button"
     ),
-    package = "shinymanager.webr",
+    package = "authlas",
     stylesheet = "fab-button.min.css",
     all_files = FALSE
   )
