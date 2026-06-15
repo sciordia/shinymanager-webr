@@ -4,11 +4,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this package is
 
-`shinymanager.webr` is a fork of `shinymanager` providing an access gate for Shiny apps, with
+`authlas` is a standalone authentication and access-gate package for Shiny apps, with
 **two deployment variants** that share one package. All auth UI is built with **muiMaterial**
 (Material UI via shiny.react). Imports are kept light (`R6`, `shiny`, `htmltools`, `jsonlite`,
 `muiMaterial`); everything the server variant needs is in `Suggests` and loaded on demand, so the
-package still installs in webR.
+package still installs in webR. (`authlas` was originally derived from the `shinymanager` package,
+GPL-3, but has since diverged into a distinct package; the name nods to Atlas upholding the sky.)
 
 1. **External / webR variant** (`R/external-auth.R`, `R/welcome_panel.R`). Authentication is
    delegated to an external provider (Auth0/OIDC) or simply gated by a button. The app runs in the
@@ -40,8 +41,8 @@ roxygen2::roxygenise()        # or devtools::document()
 # Load the package for interactive work (devtools or the lighter pkgload)
 pkgload::load_all(".")        # or devtools::load_all()
 
-# Run the full test suite (needs SHINYMANAGER_KEY set for the crypto/local tests)
-Sys.setenv(SHINYMANAGER_KEY = "test-master-key")
+# Run the full test suite (needs AUTHLAS_KEY set for the crypto/local tests)
+Sys.setenv(AUTHLAS_KEY = "test-master-key")
 pkgload::load_all("."); testthat::test_dir("tests/testthat")   # or devtools::test()
 
 # Full R CMD check
@@ -50,7 +51,7 @@ devtools::check()
 
 Tests live in `tests/testthat/`: `test-external-auth.R`, `test-language.R`, `test-tokens.R`
 (external/webR variant), plus `test-crypto.R`, `test-local-auth.R`, `test-2fa-flow.R` (server
-variant; they `skip_if_not_installed()` the Suggests and need `SHINYMANAGER_KEY`). testthat uses
+variant; they `skip_if_not_installed()` the Suggests and need `AUTHLAS_KEY`). testthat uses
 edition 3. The server tests drive the flow with `shiny::testServer()` and mock `send_2fa()` /
 `generate_2fa_code()` via `local_mocked_bindings()` to avoid hitting Pushover.
 
@@ -58,7 +59,7 @@ edition 3. The server tests drive the flow with `shiny::testServer()` and mock `
 
 Both variants share the same backbone: an R6 in-memory token manager (`.tok`), the URL/query-string
 state helpers, i18n, the floating logout button, and the inactivity timeout. They differ in how
-identity is acquired. Package-level `@import shiny` (in `R/shinymanager.webr-package.R`) makes all
+identity is acquired. Package-level `@import shiny` (in `R/authlas-package.R`) makes all
 of shiny available to the namespace — required because the server functions use many shiny
 functions unqualified.
 
@@ -115,7 +116,7 @@ like the external variant's `user_info`; the per-user policy fields (`twofa_enab
   pre-existing databases (called from `create_user_db()`, `add_user()`, and the user readers).
   `with_con()` accepts a path or an open connection.
 - `R/crypto.R` — `hash_password()`/`verify_password()` (Argon2id via `sodium`),
-  `encrypt_secret()`/`decrypt_secret()` (AES-CBC via `openssl`, key from `SHINYMANAGER_KEY`),
+  `encrypt_secret()`/`decrypt_secret()` (AES-CBC via `openssl`, key from `AUTHLAS_KEY`),
   `generate_2fa_code()`. Password = one-way hash; Pushover key = reversible encryption.
 
 ### Session token manager (`R/tokens.R`)
@@ -138,8 +139,8 @@ unused since the classic login UI was removed.
 
 ### UI / assets
 - `R/fab_button.R` — `fab_button()` renders the Material-design floating logout button.
-- `R/onLoad.R` — `.onLoad()` registers `inst/assets/` as the Shiny resource path `"shinymanager"`,
-  so any file added there is served under `shinymanager/...` automatically.
+- `R/onLoad.R` — `.onLoad()` registers `inst/assets/` as the Shiny resource path `"authlas"`,
+  so any file added there is served under `authlas/...` automatically.
 - `inst/assets/` — `styles-auth.css`, `timeout.js`, the `fab-button/` SCSS+CSS, the readable
   Bootstrap theme, Raleway fonts, plus the server-variant assets `styles-local.css`, `twofa.js`
   (six-cell widget → `input$sm_2fa_code`) and `device-cookie.js`.
@@ -162,5 +163,6 @@ unused since the classic login UI was removed.
 - Server-variant code must keep heavy deps optional: declare them in `Suggests` and guard every use
   with `require_pkg("<pkg>")` (in `R/crypto.R`) + `pkg::fn()`. Never promote `duckdb`, `DBI`,
   `sodium`, `openssl` or `pushoverr` to `Imports` — that would break webR installation.
-- The master encryption key comes from the `SHINYMANAGER_KEY` environment variable; the server
-  tests and any app using the local variant must set it.
+- The master encryption key comes from the `AUTHLAS_KEY` environment variable (the legacy
+  `SHINYMANAGER_KEY` is honored as a fallback in `sm_master_key()`); the server tests and any app
+  using the local variant must set it.

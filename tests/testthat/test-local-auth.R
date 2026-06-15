@@ -18,7 +18,7 @@ seed_db <- function() {
 
 test_that("check_credentials_local validates credentials and exposes the profile", {
   skip_if_no_db()
-  withr::local_envvar(SHINYMANAGER_KEY = "test-master-key-123")
+  withr::local_envvar(AUTHLAS_KEY = "test-master-key-123")
   chk <- check_credentials_local(seed_db())
 
   ok <- chk("sergio@example.org", "S3cr3t!")
@@ -36,14 +36,14 @@ test_that("check_credentials_local validates credentials and exposes the profile
 
 test_that("check_credentials_local can restrict by role", {
   skip_if_no_db()
-  withr::local_envvar(SHINYMANAGER_KEY = "test-master-key-123")
+  withr::local_envvar(AUTHLAS_KEY = "test-master-key-123")
   chk <- check_credentials_local(seed_db(), allowed_roles = "user")
   expect_false(chk("sergio@example.org", "S3cr3t!")$result)
 })
 
 test_that("check_credentials_local exposes per-user 2FA policy", {
   skip_if_no_db()
-  withr::local_envvar(SHINYMANAGER_KEY = "test-master-key-123")
+  withr::local_envvar(AUTHLAS_KEY = "test-master-key-123")
   dbf <- tempfile(fileext = ".duckdb")
   create_user_db(dbf)
   add_user(dbf, email = "twofa@example.org", password = "S3cr3t!", pushover_user_key = "K")
@@ -62,7 +62,7 @@ test_that("check_credentials_local exposes per-user 2FA policy", {
 
 test_that("set_user_settings updates and clears per-user policy", {
   skip_if_no_db()
-  withr::local_envvar(SHINYMANAGER_KEY = "test-master-key-123")
+  withr::local_envvar(AUTHLAS_KEY = "test-master-key-123")
   dbf <- seed_db()
   chk <- check_credentials_local(dbf)
 
@@ -80,7 +80,7 @@ test_that("set_user_settings updates and clears per-user policy", {
 
 test_that("databases from older versions are auto-migrated", {
   skip_if_no_db()
-  withr::local_envvar(SHINYMANAGER_KEY = "test-master-key-123")
+  withr::local_envvar(AUTHLAS_KEY = "test-master-key-123")
   dbf <- tempfile(fileext = ".duckdb")
   con <- DBI::dbConnect(duckdb::duckdb(), dbdir = dbf)
   # legacy schema: no twofa_enabled / device_ttl_hours columns
@@ -99,7 +99,7 @@ test_that("databases from older versions are auto-migrated", {
 
 test_that("device tokens are validated and expire", {
   skip_if_no_db()
-  withr::local_envvar(SHINYMANAGER_KEY = "test-master-key-123")
+  withr::local_envvar(AUTHLAS_KEY = "test-master-key-123")
   dbf <- seed_db()
   con <- DBI::dbConnect(duckdb::duckdb(), dbdir = dbf)
   on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)

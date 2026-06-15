@@ -1,5 +1,5 @@
 library(shiny)
-library(shinymanager.webr)
+library(authlas)
 
 ui <- fluidPage(
 

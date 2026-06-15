@@ -1,5 +1,5 @@
 library(shiny)
-library(shinymanager.webr)
+library(authlas)
 
 ui <- secure_app_external(
   fluidPage(

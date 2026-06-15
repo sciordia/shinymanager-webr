@@ -1,4 +1,4 @@
 library(testthat)
-library(shinymanager.webr)
+library(authlas)
 
-test_check("shinymanager.webr")
+test_check("authlas")

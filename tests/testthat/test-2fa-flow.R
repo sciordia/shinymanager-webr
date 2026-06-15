@@ -29,7 +29,7 @@ make_server <- function(dbf) {
 
 test_that("full login + 2FA flow authenticates and creates a device token", {
   skip_if_no_db()
-  withr::local_envvar(SHINYMANAGER_KEY = "test-master-key-123")
+  withr::local_envvar(AUTHLAS_KEY = "test-master-key-123")
   # avoid hitting Pushover and pin the code
   local_mocked_bindings(generate_2fa_code = function(digits = 6L) "123456")
   local_mocked_bindings(send_2fa = function(db, user_id, code, pushover_app_token, title = "x") TRUE)
@@ -67,7 +67,7 @@ test_that("full login + 2FA flow authenticates and creates a device token", {
 
 test_that("a user with 2FA disabled logs in straight away", {
   skip_if_no_db()
-  withr::local_envvar(SHINYMANAGER_KEY = "test-master-key-123")
+  withr::local_envvar(AUTHLAS_KEY = "test-master-key-123")
   local_mocked_bindings(send_2fa = function(...) stop("2FA should not be sent"))
   dbf <- tempfile(fileext = ".duckdb")
   create_user_db(dbf)
@@ -89,7 +89,7 @@ test_that("a user with 2FA disabled logs in straight away", {
 
 test_that("a per-user device_ttl_hours overrides the server default", {
   skip_if_no_db()
-  withr::local_envvar(SHINYMANAGER_KEY = "test-master-key-123")
+  withr::local_envvar(AUTHLAS_KEY = "test-master-key-123")
   local_mocked_bindings(generate_2fa_code = function(digits = 6L) "123456")
   local_mocked_bindings(send_2fa = function(db, user_id, code, pushover_app_token, title = "x") TRUE)
   dbf <- tempfile(fileext = ".duckdb")
@@ -114,7 +114,7 @@ test_that("a per-user device_ttl_hours overrides the server default", {
 
 test_that("a valid device cookie skips 2FA", {
   skip_if_no_db()
-  withr::local_envvar(SHINYMANAGER_KEY = "test-master-key-123")
+  withr::local_envvar(AUTHLAS_KEY = "test-master-key-123")
   local_mocked_bindings(send_2fa = function(...) TRUE)
   dbf <- seed_db()
   con <- DBI::dbConnect(duckdb::duckdb(), dbdir = dbf)
@@ -132,7 +132,7 @@ test_that("a valid device cookie skips 2FA", {
 
 test_that("an expired 2FA code is rejected", {
   skip_if_no_db()
-  withr::local_envvar(SHINYMANAGER_KEY = "test-master-key-123")
+  withr::local_envvar(AUTHLAS_KEY = "test-master-key-123")
   dbf <- seed_db()
   con <- DBI::dbConnect(duckdb::duckdb(), dbdir = dbf)
   on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
