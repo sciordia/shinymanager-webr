@@ -8,7 +8,9 @@
 # setup and no Pushover account. The 2FA code is printed to the R console.
 # See the PRODUCTION NOTES at the bottom for what to change for a real deployment.
 #
-# Log in with:  sergio@example.org  /  S3cr3t!
+# Two demo users show that 2FA is decided PER USER and stored in the database:
+#   sergio@example.org / S3cr3t!  -> 2FA required (code printed to the console)
+#   ana@example.org    / S3cr3t!  -> 2FA disabled: logs straight into the app
 
 library(shiny)
 library(shinymanager.webr)
@@ -44,7 +46,21 @@ add_user(
   pushover_user_key = "demo-user-key",            # unused in demo (send_2fa stubbed)
   name              = "Sergio",
   role              = "admin",
-  profile           = list(lab = "Genomics", projects = 3)
+  profile           = list(lab = "Genomics", projects = 3),
+  twofa_enabled     = TRUE,                        # require the 2FA step (default)
+  device_ttl_hours  = 48                           # "remember device" for 48h (per user)
+)
+# A user with 2FA disabled: a valid password logs straight into the app. Both
+# settings live in the database and can also be changed later for an existing
+# user with set_user_settings(db, email, twofa_enabled = ..., device_ttl_hours = ...).
+add_user(
+  db,
+  email         = "ana@example.org",
+  password      = "S3cr3t!",
+  name          = "Ana",
+  role          = "user",
+  profile       = list(lab = "Proteomics"),
+  twofa_enabled = FALSE
 )
 
 # --- app --------------------------------------------------------------------

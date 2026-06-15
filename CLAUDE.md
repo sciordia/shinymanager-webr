@@ -20,7 +20,10 @@ package still installs in webR.
    real server (code not exposed). Credential login (email + password) against a **duckdb** user
    store, passwords hashed with **Argon2id** (`sodium`), per-user Pushover key stored **encrypted**
    (`openssl`), then **two-factor authentication**: a 6-digit code sent via **Pushover**
-   (`pushoverr`), valid for 30 s, with a per-device "remember for 24 h" cookie that skips 2FA.
+   (`pushoverr`), valid for 30 s, with a per-device "remember device" cookie that skips 2FA.
+   Whether 2FA is required at all, and the remember-device lifetime, are **per-user settings
+   stored in the database** (`twofa_enabled`, `device_ttl_hours`); a user with 2FA disabled logs
+   straight in after a valid password.
 
 The server variant deliberately reintroduces DB/credentials (reversing the original fork's
 "no DB" stance), but only behind `Suggests` + `requireNamespace()`, so the webR path never loads
@@ -82,11 +85,15 @@ in the URL query string.
   the "no login" gate.
 
 ### Local / server flow (`R/local-auth.R`, `R/db.R`, `R/crypto.R`)
-The flow is: login form → verify credentials (Argon2id) against duckdb → if a valid device cookie
-exists skip 2FA, else generate a 6-digit code, store its hash + timestamp + attempt counter in
-duckdb, send it via Pushover → 2FA screen (six cells) → on success mint the session token (same
-`.tok`), set the device cookie, and reload into the app. Profile fields (stored as JSON in the user
-row) are exposed to the session exactly like the external variant's `user_info`.
+The flow is: login form → verify credentials (Argon2id) against duckdb → if the user has 2FA
+disabled (`twofa_enabled = FALSE`) mint the token immediately; else if a valid device cookie exists
+skip 2FA, else generate a 6-digit code, store its hash + timestamp + attempt counter in duckdb,
+send it via Pushover → 2FA screen (six cells) → on success mint the session token (same `.tok`),
+set the device cookie (per-user `device_ttl_hours`, falling back to the server default), and reload
+into the app. Profile fields (stored as JSON in the user row) are exposed to the session exactly
+like the external variant's `user_info`; the per-user policy fields (`twofa_enabled`,
+`device_ttl_hours`) are returned by `check_credentials_local()` at the top level, **not** inside
+`user_info`.
 
 - `secure_app_local(ui, ...)` — UI gate. When the token is invalid it renders a
   `muiMaterial::muiMaterialPage()` (with `CssBaseline()`) hosting both the login and 2FA screens as
@@ -96,12 +103,17 @@ row) are exposed to the session exactly like the external variant's `user_info`.
   machine (`rv$stage` = login/twofa), device-cookie checks, resend/cancel, logout and timeout
   (reusing the external scaffolding). Returns reactive values with the user profile.
 - `check_credentials_local(db, allowed_roles)` — validates email+password against duckdb and returns
-  the same `list(result, expired, authorized, user_info)` shape. **Never exposes the password hash
-  or Pushover key** in `user_info`.
-- `R/db.R` — duckdb schema (`users`, `twofa_codes`, `device_tokens`; timestamps as epoch seconds)
-  and helpers: `create_user_db()`, `add_user()` (public), plus internal `db_get_user()`,
-  `db_set_twofa()`, `db_add_device()`, `db_check_device()`, etc. `with_con()` accepts a path or an
-  open connection.
+  the `list(result, expired, authorized, user_info)` shape **plus** the top-level policy fields
+  `twofa_enabled` and `device_ttl_hours`. **Never exposes the password hash, Pushover key, or the
+  policy fields** in `user_info`.
+- `R/db.R` — duckdb schema (`users`, `twofa_codes`, `device_tokens`; timestamps as epoch seconds).
+  The `users` table carries the per-user policy columns `twofa_enabled` and `device_ttl_hours`.
+  Public helpers: `create_user_db()`, `add_user()` (both take `twofa_enabled`/`device_ttl_hours`),
+  and `set_user_settings()` (update those for an existing user; `device_ttl_hours = NA` clears the
+  override). Internal: `db_get_user()`, `db_set_twofa()`, `db_add_device()`, `db_check_device()`,
+  etc., plus `db_ensure_user_settings()` which `ALTER TABLE ... ADD COLUMN IF NOT EXISTS` migrates
+  pre-existing databases (called from `create_user_db()`, `add_user()`, and the user readers).
+  `with_con()` accepts a path or an open connection.
 - `R/crypto.R` — `hash_password()`/`verify_password()` (Argon2id via `sodium`),
   `encrypt_secret()`/`decrypt_secret()` (AES-CBC via `openssl`, key from `SHINYMANAGER_KEY`),
   `generate_2fa_code()`. Password = one-way hash; Pushover key = reversible encryption.
