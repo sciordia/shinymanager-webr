@@ -12,7 +12,11 @@
 #'
 #' @return \code{check_credentials_local()} returns a validation function that
 #'   takes \code{user} (email) and \code{password} and returns a list with
-#'   \code{result}, \code{expired}, \code{authorized} and \code{user_info}.
+#'   \code{result}, \code{expired}, \code{authorized}, \code{user_info}, and the
+#'   per-user policy fields \code{twofa_enabled} (logical) and
+#'   \code{device_ttl_hours} (numeric or \code{NA}). The policy fields are kept
+#'   out of \code{user_info} (which is exposed to the app and stored in the
+#'   session token).
 #'
 #' @seealso A runnable example app:
 #'   \code{system.file("examples", "local_auth.R", package = "shinymanager.webr")}.
@@ -46,7 +50,13 @@ check_credentials_local <- function(db, allowed_roles = NULL) {
       if (length(extra)) info <- utils::modifyList(info, as.list(extra))
     }
 
-    list(result = TRUE, expired = FALSE, authorized = TRUE, user_info = info)
+    # Per-user auth policy is returned at top level (not inside user_info, which
+    # is public/stored in the token). Missing/NA falls back to secure defaults.
+    twofa_enabled <- if (is.null(row$twofa_enabled) || is.na(row$twofa_enabled)) TRUE else isTRUE(row$twofa_enabled)
+    device_ttl_hours <- if (is.null(row$device_ttl_hours) || is.na(row$device_ttl_hours)) NA_real_ else as.numeric(row$device_ttl_hours)
+
+    list(result = TRUE, expired = FALSE, authorized = TRUE, user_info = info,
+         twofa_enabled = twofa_enabled, device_ttl_hours = device_ttl_hours)
   }
 }
 
@@ -225,7 +235,11 @@ secure_app_local <- function(ui,
 #' @param twofa_window Seconds the 2FA code stays valid.
 #' @param max_attempts Maximum wrong 2FA attempts before returning to login.
 #' @param remember_device If \code{TRUE}, a valid device cookie skips 2FA.
-#' @param device_ttl_hours Lifetime of the device cookie/token, in hours.
+#' @param device_ttl_hours Default lifetime of the device cookie/token, in hours,
+#'   used for users that have no per-user \code{device_ttl_hours} of their own
+#'   (see \code{\link{add_user}}/\code{\link{set_user_settings}}). Whether 2FA is
+#'   required at all is also decided per user (\code{twofa_enabled}); users with
+#'   2FA disabled log in straight after a valid password.
 #' @param check_credentials Function returned by \code{check_credentials_local}.
 #' @param session Shiny session.
 #'
@@ -264,7 +278,7 @@ secure_server_local <- function(check_credentials,
   })
 
   user_info_rv <- reactiveValues(result = FALSE, user = NULL, user_info = NULL)
-  rv <- reactiveValues(stage = "login", error = NULL, pending = NULL)
+  rv <- reactiveValues(stage = "login", error = NULL, pending = NULL, pending_ttl = NULL)
 
   # Populate user info once a valid session token is present (after reload).
   observe({
@@ -305,6 +319,22 @@ secure_server_local <- function(check_credentials,
     }
     rv$pending <- res$user_info
     uid <- res$user_info$user_id
+
+    # Effective per-user policy, falling back to the server defaults.
+    user_twofa <- if (is.null(res$twofa_enabled)) TRUE else isTRUE(res$twofa_enabled)
+    eff_ttl <- if (is.null(res$device_ttl_hours) || is.na(res$device_ttl_hours)) {
+      device_ttl_hours
+    } else {
+      res$device_ttl_hours
+    }
+    rv$pending_ttl <- eff_ttl
+
+    # 2FA disabled for this user: log straight in (no code, no device cookie).
+    if (!user_twofa) {
+      rv$error <- NULL
+      finish_login(res$user_info)
+      return()
+    }
 
     dev <- isolate(input$shinymanager_device)
     remembered <- isTRUE(remember_device) && !is.null(dev) && nzchar(dev) &&
@@ -354,9 +384,10 @@ secure_server_local <- function(check_credentials,
     }
     with_con(db, function(con) db_consume_twofa(con, uid))
     if (isTRUE(remember_device)) {
-      tok <- with_con(db, function(con) db_add_device(con, uid, device_ttl_hours))
+      ttl <- rv$pending_ttl %||% device_ttl_hours
+      tok <- with_con(db, function(con) db_add_device(con, uid, ttl))
       session$sendCustomMessage("shinymanager_set_device_cookie",
-                                list(value = tok, max_age = device_ttl_hours * 3600))
+                                list(value = tok, max_age = ttl * 3600))
     }
     finish_login(rv$pending)
   }, ignoreInit = TRUE)

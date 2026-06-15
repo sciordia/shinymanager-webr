@@ -83,8 +83,21 @@ Full example: `system.file("examples", "welcome_webr.R", package = "shinymanager
 ## Variant 2 — local / server (login + 2FA)
 
 Email + password against duckdb, then a 6-digit Pushover code (valid 30s, with
-attempt limiting). A per-device cookie can skip 2FA for 24h. The user profile is
-exposed to the session like the external variant's `user_info`.
+attempt limiting). A per-device cookie can skip 2FA for a while. The user profile
+is exposed to the session like the external variant's `user_info`.
+
+Whether the 2FA step is required, and how long a remembered device skips it, are
+decided **per user** and stored in the database:
+
+- `twofa_enabled` (default `TRUE`) — set to `FALSE` to log a user straight into
+  the app once the password matches, with no Pushover step.
+- `device_ttl_hours` — per-user lifetime of the "remember this device" token;
+  when unset (`NULL`), the server's `device_ttl_hours` (default 24) applies.
+
+Set them at creation with `add_user(...)` or change them later for an existing
+user with `set_user_settings(db, email, twofa_enabled = ..., device_ttl_hours = ...)`
+(pass `device_ttl_hours = NA` to clear the override). Databases created by older
+versions gain these columns automatically the first time they are opened.
 
 ```r
 library(shiny)
@@ -97,7 +110,8 @@ db <- "users.duckdb"
 create_user_db(db)
 add_user(db, email = "user@example.org", password = "S3cr3t!",
          pushover_user_key = "<user-pushover-key>", name = "User", role = "admin",
-         profile = list(lab = "Genomics"))
+         profile = list(lab = "Genomics"),
+         twofa_enabled = TRUE, device_ttl_hours = 24)   # per-user 2FA policy
 
 ui <- secure_app_local(
   ui = tagList(
@@ -150,7 +164,7 @@ welcome_panel()
 
 # Local / server variant
 secure_app_local(); secure_server_local(); check_credentials_local()
-create_user_db(); add_user()
+create_user_db(); add_user(); set_user_settings()
 hash_password(); verify_password(); encrypt_secret(); decrypt_secret()
 
 # Shared
