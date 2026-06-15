@@ -1,3 +1,23 @@
+# shinymanager.webr 0.3.0
+
+## Features
+
+* Two-factor authentication is now **optional per user** in the local/server
+  variant. Each user has a `twofa_enabled` flag stored in the database; when
+  `FALSE`, a valid password logs the user straight into the app with no Pushover
+  step. Defaults to `TRUE` (unchanged behaviour).
+* The "remember this device" lifetime is now configurable **per user** via the
+  `device_ttl_hours` column. When a user has no value of their own, the server's
+  `device_ttl_hours` argument (default 24) applies.
+* `add_user()` gains `twofa_enabled` and `device_ttl_hours` arguments, and a new
+  `set_user_settings()` function updates both for an existing user
+  (`device_ttl_hours = NA` clears the per-user override).
+* `check_credentials_local()` now also returns `twofa_enabled` and
+  `device_ttl_hours` at the top level (kept out of the public `user_info`).
+* Databases created by earlier versions are migrated automatically: the new
+  columns are added on first open (`ALTER TABLE ... ADD COLUMN IF NOT EXISTS`),
+  so existing user stores keep working without being recreated.
+
 # shinymanager.webr 0.2.2
 
 ## Fixes
