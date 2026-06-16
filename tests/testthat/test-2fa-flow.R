@@ -65,6 +65,46 @@ test_that("full login + 2FA flow authenticates and creates a device token", {
   })
 })
 
+test_that("three wrong 2FA codes return the user to the login screen", {
+  skip_if_no_db()
+  withr::local_envvar(AUTHLAS_KEY = "test-master-key-123")
+  local_mocked_bindings(generate_2fa_code = function(digits = 6L) "123456")
+  local_mocked_bindings(send_2fa = function(db, user_id, code, pushover_app_token, title = "x") TRUE)
+  dbf <- seed_db()
+
+  testServer(make_server(dbf), {
+    session$setInputs(shinymanager_device = "")
+
+    # right password -> 2FA challenge
+    session$setInputs(sm_email = "sergio@example.org", sm_password = "S3cr3t!")
+    session$setInputs(sm_login = 1)
+    expect_equal(output$sm_stage, "twofa")
+
+    con <- DBI::dbConnect(duckdb::duckdb(), dbdir = dbf)
+    uid <- db_get_user(con, "sergio@example.org")$user_id
+
+    # 1st wrong code -> 2 attempts remaining, still on 2FA
+    session$setInputs(sm_2fa_code = "000000", sm_2fa_submit = 1)
+    expect_equal(db_get_twofa(con, uid)$attempts, 1)
+    expect_equal(output$sm_stage, "twofa")
+    expect_match(output$sm_twofa_error, "2 intentos")
+
+    # 2nd wrong code -> 1 attempt remaining, still on 2FA
+    session$setInputs(sm_2fa_submit = 2)
+    expect_equal(db_get_twofa(con, uid)$attempts, 2)
+    expect_equal(output$sm_stage, "twofa")
+    expect_match(output$sm_twofa_error, "1 intento")
+
+    # 3rd wrong code -> attempts exhausted, back to login, not authenticated
+    session$setInputs(sm_2fa_submit = 3)
+    expect_equal(db_get_twofa(con, uid)$attempts, 3)
+    expect_equal(output$sm_stage, "login")
+    expect_false(session$userData$auth$result)
+    expect_match(output$sm_login_error, "Demasiados intentos")
+    DBI::dbDisconnect(con, shutdown = TRUE)
+  })
+})
+
 test_that("a user with 2FA disabled logs in straight away", {
   skip_if_no_db()
   withr::local_envvar(AUTHLAS_KEY = "test-master-key-123")

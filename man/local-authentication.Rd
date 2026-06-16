@@ -24,7 +24,7 @@ secure_server_local(
   pushover_app_token = Sys.getenv("PUSHOVER_APP"),
   pushover_title = NULL,
   twofa_window = 30,
-  max_attempts = 5,
+  max_attempts = 3,
   remember_device = TRUE,
   device_ttl_hours = 24,
   timeout = 15,
