@@ -1,6 +1,6 @@
 Package: authlas
 Title: Authentication and Access Container for 'Shiny' and 'webR'
-Version: 0.4.0
+Version: 0.4.1
 Authors@R:
     person("Sergio", "Ciordia", email = "wardiam@gmail.com", role = c("aut", "cre"))
 Author: Sergio Ciordia [aut, cre]

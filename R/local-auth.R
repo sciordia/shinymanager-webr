@@ -252,7 +252,7 @@ secure_server_local <- function(check_credentials,
                                 pushover_app_token = Sys.getenv("PUSHOVER_APP"),
                                 pushover_title = NULL,
                                 twofa_window = 30,
-                                max_attempts = 5,
+                                max_attempts = 3,
                                 remember_device = TRUE,
                                 device_ttl_hours = 24,
                                 timeout = 15,
@@ -379,7 +379,15 @@ secure_server_local <- function(check_credentials,
     code <- input$sm_2fa_code %||% ""
     if (!verify_password(code, tw$code_hash)) {
       with_con(db, function(con) db_incr_twofa_attempts(con, uid))
-      rv$error <- "C\u00f3digo incorrecto."
+      remaining <- max_attempts - (tw$attempts + 1)
+      if (remaining <= 0) {
+        rv$error <- "Demasiados intentos. Vuelve a iniciar sesi\u00f3n."
+        rv$stage <- "login"
+      } else if (remaining == 1) {
+        rv$error <- "C\u00f3digo incorrecto. Te queda 1 intento."
+      } else {
+        rv$error <- sprintf("C\u00f3digo incorrecto. Te quedan %d intentos.", remaining)
+      }
       return()
     }
     with_con(db, function(con) db_consume_twofa(con, uid))

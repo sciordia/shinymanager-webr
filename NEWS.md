@@ -1,3 +1,12 @@
+# authlas 0.4.1
+
+## Changes
+
+* The local/server two-factor step now allows **3 code attempts** (was 5) before
+  returning the user to the login screen, and each failed attempt reports how many
+  tries remain. Issuing a fresh code (re-login or *Resend*) resets the counter. The
+  cap is still configurable via `secure_server_local(max_attempts = ...)`.
+
 # authlas 0.4.0
 
 ## Breaking changes
